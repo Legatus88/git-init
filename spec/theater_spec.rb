@@ -1,0 +1,97 @@
+require './theater'
+
+describe Theater do
+  
+  let(:theater) { Theater.new('movies.txt') }  
+   
+  describe '.show' do
+    
+    context 'when gets morning time' do
+      it 'gives period: :ancient filter' do
+        allow(theater).to receive(:filter).and_return([AncientMovie.new({title: "Citizen Kane", rate: 8.4, year: 1940, genre: 'Drama,Mystery', period: :ancient, actors: 'Orson Welles,Joseph Cotten,Dorothy Comingore'}, 'something')])
+        theater.show('08:00')
+        expect(theater).to have_received(:filter).with(period: :ancient)
+      end
+    end
+
+    context 'when gets day time' do
+      it 'gives period: :ancient filter' do
+        allow(theater).to receive(:filter).and_return([AncientMovie.new({title: "Citizen Kane", rate: 8.4, year: 1965, genre: 'Comedy', period: :ancient, actors: 'Orson Welles,Joseph Cotten,Dorothy Comingore'}, 'something')])
+        theater.show('13:00')
+        expect(theater).to have_received(:filter).with(period: /classic|modern|new/i, genre: /Comedy|Advanture/)
+      end
+    end
+
+    context 'when gets evening time' do
+      it 'gives period: :ancient filter' do
+        allow(theater).to receive(:filter).and_return([AncientMovie.new({title: "Citizen Kane", rate: 8.4, year: 1990, genre: 'Drama,Mystery', period: :ancient, actors: 'Orson Welles,Joseph Cotten,Dorothy Comingore'}, 'something')])
+        theater.show('19:00')
+        expect(theater).to have_received(:filter).with(period: /classic|modern|new/i, genre: /Drama|Horror/)
+      end
+    end 
+
+    context 'when gets morning time' do
+      it 'prints a correct string' do
+        allow(theater).to receive(:filter).and_return([AncientMovie.new({title: "Citizen Kane", rate: 8.4, year: 1940, genre: 'Drama,Mystery', period: :ancient, actors: 'Orson Welles,Joseph Cotten,Dorothy Comingore'}, 'something')])
+        expect{ theater.show('08:00') }.to output('Now showing: Citizen Kane 00:00:00 - 00:00:00').to_stdout
+      end
+    end
+
+    context 'when the time is wrong' do
+      it 'raise NoMethodError' do
+      	expect{ theater.show('01:00') }.to raise_error NoMethodError
+      end
+    end	
+  end   
+
+  describe '.when?' do
+  	context 'when movie is in the morning timetable' do
+  	  it 'gives a time range' do
+  	  	expect(theater.when?('Citizen Kane')).to eq(['08:00'..'12:00'])
+  	  end
+    end
+
+    context 'when movie is not in the timetable' do 
+      it 'gives nothing' do
+      	expect(theater.when?('The Terminator')).to eq([])
+      end
+    end
+  end
+
+  describe '.buy_ticket' do
+    context 'when name is incorrect' do
+      it 'raises NameError' do
+        expect{ theater.buy_ticket(awd) }.to raise_error NameError
+      end
+    end
+
+    context 'when name movie is shown in morning time' do
+      it 'adds gives to cash 3' do
+        theater.buy_ticket('Citizen Kane')
+        expect(theater.cash.to_i).to eq(3)
+      end
+    end
+
+    context 'when name movie is shown in day time' do
+      it 'adds gives to cash 3' do
+        theater.buy_ticket('Back to the Future')
+        expect(theater.cash.to_i).to eq(5)
+      end
+    end
+
+
+    context 'when name movie is shown in evening time' do
+      it 'adds gives to cash 3' do
+        theater.buy_ticket('Pulp Fiction')
+        expect(theater.cash.to_i).to eq(10)
+      end
+    end
+
+
+    context 'when movie is not in the timetable' do
+      it 'raises error' do
+        expect{ theater.buy_ticket('awd') }.to raise_error NameError
+      end
+    end    
+  end
+end
